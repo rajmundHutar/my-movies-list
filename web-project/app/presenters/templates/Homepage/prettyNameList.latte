@@ -1,0 +1,20 @@
+{block title}
+Make a pretty name!
+{/block}
+{block content}
+
+{control prettyNameForm}
+
+<ul>
+{foreach $suggestionsList as $item}
+    <li>
+        {dump $item}
+        <img src="{$item['image']}" class="img-responsive thumbnail" style="max-height:200px">
+        <div>
+            <a n:href=":prettyName id => $item['id']">{$item['name']}</a><br>
+            {$item['year']} - <br>
+            {$item['description']}
+        </div>
+    </li>
+{/foreach}
+</ul>

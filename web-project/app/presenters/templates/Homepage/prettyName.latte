@@ -1,0 +1,10 @@
+{block title}
+Make a pretty name!
+{/block}
+{block content}
+
+{control prettyNameForm}
+
+<h2 n:if="$prettyName">{$prettyName}</h2>
+
+<a n:href="prettyNameList">Zpět</a>

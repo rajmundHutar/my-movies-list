@@ -1,0 +1,162 @@
+{* This is the welcome page, you can delete it *}
+{block title}All movies!
+    <small>{count($movies)}</small>{/block}
+
+{block content}
+    <nav class="navbar navbar-default">
+        <ul class="nav navbar-nav">
+            <li><a n:href="default">Show all</a></li>
+            <li><a href="#" id="showNew">Show new</a></li>
+            <li>Sort by:</li>
+            <li><a href="#" id="sortYear">Released</a></li>
+            <li><a href="#" id="sortDownloaded">Downloaded</a></li>
+            <li><a href="#" id="sortRandom">Random</a></li>
+        </ul>
+        <div class="col-md-12">
+            {foreach $allTags as $tag}
+                {var $selected = isset($selectedTags[$tag]) && $selectedTags[$tag]}
+                <a n:href="selectTag! tag => $tag" n:class="$selected ? btn-primary : btn-default, btn, btn-xs, tags" data-tag="{$tag}">{$tag}</a>
+            {/foreach}
+        </div>
+    </nav>
+
+    {if count($cantParse)}
+        <h2>Nelze zjistit:</h2>
+        <ul>
+            {foreach $cantParse as $m}
+                <li>{$m}</li>
+            {/foreach}
+        </ul>
+    {/if}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            {srand(mktime(0, 0, 0, date('m'), date('d'), date('Y')))}
+            {var $rand = rand(0, count($movies)-1)}
+            <div class="col-md-8">
+                <h2>Today we recomands you: </h2>
+                <p>
+                <h3><a n:href="Play, path => $movies[$rand]->getFilePath()">{$movies[$rand]->getName()}</a></h3><br>
+                <span>{$movies[$rand]->getDescription()}</span><br>
+                <span>{foreach $movies[$rand]->getGenre() as $genre}{$genre}{sep} / {/sep}{/foreach}</span><br>
+                <span>Downloaded: {$movies[$rand]->getDateDownloaded()|date:'d.m.Y'}</span>
+                </p>
+            </div>
+            <div class="col-md-3">
+                <div class="center">
+                    <a n:href="Play, path => $movies[$rand]->getFilePath()">
+                        <img class="img-responsive" src="{$movies[$rand]->getImage()}">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row movies">
+        {foreach $movies as $movie}
+            {dump $movie}
+            {if !$movie->getVisibility()}{php continue}{/if}
+            <div class="movieBox col-md-2"
+                 data-downloaded="{$movie->getDateDownloaded()|date:"Ymd"}"
+                 data-year="{$movie->getYear()}"
+                 data-name="{$movie->getName()}"
+            >
+                <div class="center"><a n:href="Play, path => $movie->getFilePath()"><img class="img-responsive"
+                                                                                          src="{$movie->getImage()}"></a>
+                </div>
+                <p>
+                    <a n:href="Play, path => $movie->getFilePath()">{$movie->getName()}</a> - {$movie->getYear()}<br>
+                    <span>{$movie->getDescription()}</span><br>
+                    <span><small>{foreach $movie->getGenre() as $genre}{$genre}{sep} / {/sep}{/foreach}</small></span><br>
+                    <span>Downloaded: {$movie->getDateDownloaded()|date:'d.m.Y'}</span>
+                </p>
+            </div>
+
+        {/foreach}
+    </div>
+
+{/block}
+
+{block scripts}
+{include #parent}
+<script n:syntax="double">
+    document.getElementById("showNew").addEventListener("click", function (e) {
+        e.preventDefault();
+        var list = document.getElementsByClassName("movieBox");
+        for (var i in list) {
+            var downloaded = list[i].getAttribute("data-downloaded");
+            var today = new Date();
+            var lastMonth = "" + today.getFullYear() + (today.getMonth() >= 10 ? today.getMonth() : "0" + (today.getMonth())) + (today.getDate() >= 10 ? today.getDate() : "0" + today.getDate());
+            if (downloaded < lastMonth) {
+                list[i].className += " hide";
+            }
+        }
+    });
+
+    document.getElementById("sortYear").addEventListener("click", function (e) {
+        var $movies = $('div.movies'),
+            $moviesLi = $movies.children('div.movieBox');
+
+        $moviesLi.sort(function (a, b) {
+            var an = a.getAttribute('data-year'),
+                bn = b.getAttribute('data-year');
+
+            if (an > bn) {
+                return -1;
+            }
+            if (an < bn) {
+                return 1;
+            }
+            an = a.getAttribute('data-name'),
+                bn = b.getAttribute('data-name');
+            if (an > bn) {
+                return 1;
+            }
+            if (an < bn) {
+                return -1;
+            }
+            return 0;
+        });
+
+        $moviesLi.detach().appendTo($movies);
+    });
+
+    document.getElementById("sortRandom").addEventListener("click", function (e) {
+        var $movies = $('div.movies'),
+            $moviesLi = $movies.children('div.movieBox');
+
+        $moviesLi.sort(function (a, b) {
+            return Math.random() - 0.5;
+        });
+
+        $moviesLi.detach().appendTo($movies);
+    });
+
+    document.getElementById("sortDownloaded").addEventListener("click", function (e) {
+        var $movies = $('div.movies'),
+            $moviesLi = $movies.children('div.movieBox');
+
+        $moviesLi.sort(function (a, b) {
+            var an = a.getAttribute('data-downloaded'),
+                bn = b.getAttribute('data-downloaded');
+
+            if (an > bn) {
+                return -1;
+            }
+            if (an < bn) {
+                return 1;
+            }
+            an = a.getAttribute('data-name'),
+                bn = b.getAttribute('data-name');
+            if (an > bn) {
+                return 1;
+            }
+            if (an < bn) {
+                return -1;
+            }
+            return 0;
+        });
+
+        $moviesLi.detach().appendTo($movies);
+    });
+
+</script>
